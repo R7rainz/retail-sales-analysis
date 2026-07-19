@@ -1,6 +1,21 @@
 # Retail Sales & Profit Analysis
 
+### ▶ [**View the live interactive dashboard**](https://r7rainz.github.io/retail-sales-analysis/)
+
 A complete Python project for cleaning retail sales data, generating analysis outputs, creating charts, producing a business insights report, and launching an interactive Streamlit dashboard.
+
+## Dashboards
+
+Two options, both driven by the same `RetailSalesAnalyzer`:
+
+| | How to view | Best for |
+| --- | --- | --- |
+| **Static dashboard** | [Live on GitHub Pages](https://r7rainz.github.io/retail-sales-analysis/) — or `python src/build_static_dashboard.py`, then open `dashboard/index.html` | Sharing a link; no install, no server |
+| **Streamlit dashboard** | `streamlit run app.py` | Local exploration with live filtering |
+
+The static dashboard is a single self-contained HTML file with no external
+requests, so it deploys straight to GitHub Pages and redeploys automatically
+whenever `dashboard/` changes.
 
 ## Project Structure
 
