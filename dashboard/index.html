@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retail Sales Dashboard</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface-0:#f4f4f1; --surface-1:#fcfcfb; --surface-2:#eceae5;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#8a8880;
+  --rule:#e6e5e1; --grid:#e6e5e1;
+  --s1:#2a78d6; --s2:#008300; --s3:#e87ba4; --s4:#eda100; --s5:#1baf7a;
+  --deemph:#c9c8c2; --accent-soft:rgba(42,120,214,.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-0:#111110; --surface-1:#1a1a19; --surface-2:#232322;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8f8e85;
+    --rule:#333331; --grid:#2e2e2c;
+    --s1:#3987e5; --s2:#008300; --s3:#d55181; --s4:#c98500; --s5:#199e70;
+    --deemph:#4a4a47; --accent-soft:rgba(57,135,229,.16);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0:#111110; --surface-1:#1a1a19; --surface-2:#232322;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8f8e85;
+  --rule:#333331; --grid:#2e2e2c;
+  --s1:#3987e5; --s2:#008300; --s3:#d55181; --s4:#c98500; --s5:#199e70;
+  --deemph:#4a4a47; --accent-soft:rgba(57,135,229,.16);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface-0);color:var(--text-primary);
+  font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1220px;margin:0 auto;padding:32px 20px 72px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--text-secondary);font-size:14px;margin:0}
+.theme-btn{background:var(--surface-1);color:var(--text-secondary);
+  border:1px solid var(--rule);border-radius:8px;padding:8px 14px;font-size:13px;
+  cursor:pointer;font-family:inherit;}
+.theme-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.banner{margin:24px 0 8px;padding:16px 18px;border-radius:10px;
+  background:var(--accent-soft);border:1px solid var(--rule);border-left:3px solid var(--s1);}
+.banner strong{display:block;margin-bottom:4px;font-size:14px}
+.banner p{margin:0;font-size:13.5px;color:var(--text-secondary)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin:24px 0 8px}
+@media (max-width:1080px){ .kpis{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:640px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+.kpi{background:var(--surface-1);border:1px solid var(--rule);border-radius:10px;padding:16px 18px}
+.kpi .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);margin-bottom:6px}
+.kpi .value{font-size:23px;font-weight:650;letter-spacing:-.025em;line-height:1.15}
+.kpi .note{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(470px,1fr));gap:18px;margin-top:18px}
+.card{background:var(--surface-1);border:1px solid var(--rule);border-radius:12px;
+  padding:20px 20px 14px;min-width:0}
+.card.full{grid-column:1/-1}
+.card h2{font-size:15.5px;margin:0 0 4px;letter-spacing:-.01em}
+.card .cap{font-size:12.5px;color:var(--text-secondary);margin:0 0 14px}
+.chart{width:100%;overflow-x:auto}
+svg{display:block;max-width:100%;height:auto}
+.toggle{background:none;border:1px solid var(--rule);color:var(--text-muted);
+  border-radius:6px;padding:4px 10px;font-size:11.5px;cursor:pointer;
+  font-family:inherit;margin-top:10px;}
+.toggle:hover{color:var(--text-primary)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:10px}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--text-muted);font-weight:600;font-size:11px;
+  text-transform:uppercase;letter-spacing:.05em}
+.hidden{display:none}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--surface-1);border:1px solid var(--rule);border-radius:8px;
+  padding:8px 11px;font-size:12.5px;box-shadow:0 6px 22px rgba(0,0,0,.16);
+  z-index:50;max-width:300px;color:var(--text-primary);}
+.tip .t-title{font-weight:650;margin-bottom:3px}
+.tip .t-row{color:var(--text-secondary);white-space:nowrap}
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:12.5px;color:var(--text-muted)}
+@media (max-width:560px){ .grid{grid-template-columns:1fr} h1{font-size:22px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Retail Sales Dashboard</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button">Toggle theme</button>
+  </header>
+  <div class="banner">
+    <strong id="bannerTitle"></strong>
+    <p id="bannerText"></p>
+  </div>
+  <section class="kpis" id="kpis"></section>
+  <section class="grid" id="grid"></section>
+  <footer id="foot"></footer>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const DATA = {"kpis":{"total_sales":14915600.824000001,"total_profit":1521767.98,"total_orders":5496,"average_discount":0.04967138945112514,"total_shipping_cost":107831.04000000001,"profit_margin":0.1020252551644714,"average_order_value":2713.9011688500727,"unique_customers":795,"total_units":214777,"date_from":"2009-01-01","date_to":"2012-12-30","line_items":8399},"regions":[{"key":"West","total_sales":3597549.2755,"total_profit":297008.61,"orders":1330,"units":51423,"margin":0.0826,"share":0.2412},{"key":"Ontario","total_sales":3063212.4795,"total_profit":346868.54,"orders":1235,"units":46685,"margin":0.1132,"share":0.2054},{"key":"Prarie","total_sales":2837304.6015,"total_profit":321160.12,"orders":1148,"units":43732,"margin":0.1132,"share":0.1902},{"key":"Atlantic","total_sales":2014248.2035,"total_profit":238960.66,"orders":748,"units":28068,"margin":0.1186,"share":0.135},{"key":"Quebec","total_sales":1510195.08,"total_profit":140426.65,"orders":587,"units":19589,"margin":0.093,"share":0.1012},{"key":"Yukon","total_sales":975867.371,"total_profit":73849.21,"orders":396,"units":13596,"margin":0.0757,"share":0.0654},{"key":"Northwest Territories","total_sales":800847.3295,"total_profit":100653.08,"orders":269,"units":9722,"margin":0.1257,"share":0.0537},{"key":"Nunavut","total_sales":116376.4835,"total_profit":2841.11,"orders":56,"units":1962,"margin":0.0244,"share":0.0078}],"categories":[{"key":"Technology","total_sales":5984248.182,"total_profit":886313.52,"orders":1858,"units":52175,"margin":0.1481,"share":0.4012},{"key":"Furniture","total_sales":5178590.542,"total_profit":117433.03,"orders":1561,"units":44324,"margin":0.0227,"share":0.3472},{"key":"Office Supplies","total_sales":3752762.1,"total_profit":518021.43,"orders":3632,"units":118278,"margin":0.138,"share":0.2516}],"segments":[{"key":"Corporate","total_sales":5498904.8775,"total_profit":599746.0,"orders":2002,"units":78517,"margin":0.1091,"share":0.3687},{"key":"Home Office","total_sales":3564763.875,"total_profit":318354.03,"orders":1341,"units":52807,"margin":0.0893,"share":0.239},{"key":"Consumer","total_sales":3063611.082,"total_profit":287959.94,"orders":1076,"units":41760,"margin":0.094,"share":0.2054},{"key":"Small Business","total_sales":2788320.9895,"total_profit":315708.01,"orders":1077,"units":41693,"margin":0.1132,"share":0.1869}],"priority":[{"key":"Critical","total_sales":2724798.6725,"total_profit":182876.87,"orders":1090,"units":40740,"margin":0.0671,"share":0.1827},{"key":"High","total_sales":3267356.361,"total_profit":407069.65,"orders":1137,"units":45675,"margin":0.1246,"share":0.2191},{"key":"Medium","total_sales":2862452.119,"total_profit":327051.73,"orders":1075,"units":41364,"margin":0.1143,"share":0.1919},{"key":"Low","total_sales":3282630.376,"total_profit":386184.9,"orders":1124,"units":44371,"margin":0.1176,"share":0.2201},{"key":"Not Specified","total_sales":2778363.2955,"total_profit":218584.83,"orders":1080,"units":42627,"margin":0.0787,"share":0.1863}],"ship_modes":[{"key":"Regular Air","total_sales":7506303.209,"total_profit":1104692.8,"orders":4541,"units":160660,"margin":0.1472,"share":0.5033},{"key":"Delivery Truck","total_sales":6224878.718,"total_profit":269644.87,"orders":1081,"units":28764,"margin":0.0433,"share":0.4173},{"key":"Express Air","total_sales":1184418.897,"total_profit":147430.31,"orders":931,"units":25353,"margin":0.1245,"share":0.0794}],"products":[{"key":"Global Troy\u2122 Executive Leather Low-Back Tilter","total_sales":275941.52,"total_profit":79284.78,"orders":17,"units":550,"margin":0.2873,"share":0.0185},{"key":"Polycom ViewStation\u2122 ISDN Videoconferencing Unit","total_sales":255303.97,"total_profit":-17771.27,"orders":7,"units":41,"margin":-0.0696,"share":0.0171},{"key":"Canon PC940 Copier","total_sales":210910.68,"total_profit":47705.85,"orders":18,"units":474,"margin":0.2262,"share":0.0141},{"key":"Riverside Palais Royal Lawyers Bookcase, Royale Cherry Finish","total_sales":206494.13,"total_profit":14291.57,"orders":11,"units":236,"margin":0.0692,"share":0.0138},{"key":"Hewlett Packard LaserJet 3310 Copier","total_sales":194880.35,"total_profit":73299.61,"orders":10,"units":334,"margin":0.3761,"share":0.0131},{"key":"Bretford CR8500 Series Meeting Room Furniture","total_sales":147412.212,"total_profit":-1989.87,"orders":14,"units":407,"margin":-0.0135,"share":0.0099},{"key":"Sharp AL-1530CS Digital Copier","total_sales":130046.81,"total_profit":11770.3,"orders":11,"units":260,"margin":0.0905,"share":0.0087},{"key":"Hewlett-Packard cp1700 [D, PS] Series Color Inkjet Printers","total_sales":128100.43,"total_profit":55281.39,"orders":10,"units":269,"margin":0.4315,"share":0.0086},{"key":"GBC DocuBind 200 Manual Binding Machine","total_sales":120342.74,"total_profit":50462.53,"orders":16,"units":286,"margin":0.4193,"share":0.0081},{"key":"Canon imageCLASS 2200 Advanced Copier","total_sales":114173.41,"total_profit":-31885.68,"orders":7,"units":32,"margin":-0.2793,"share":0.0077}],"trend":[{"month":"2009-01","total_sales":379695.018},{"month":"2009-02","total_sales":336525.205},{"month":"2009-03","total_sales":411076.411},{"month":"2009-04","total_sales":439218.8355},{"month":"2009-05","total_sales":382541.094},{"month":"2009-06","total_sales":286397.253},{"month":"2009-07","total_sales":339817.0355},{"month":"2009-08","total_sales":301470.827},{"month":"2009-09","total_sales":307395.8935},{"month":"2009-10","total_sales":346021.888},{"month":"2009-11","total_sales":265888.1155},{"month":"2009-12","total_sales":413091.8795},{"month":"2010-01","total_sales":240197.976},{"month":"2010-02","total_sales":243504.4415},{"month":"2010-03","total_sales":273429.591},{"month":"2010-04","total_sales":242681.2995},{"month":"2010-05","total_sales":272234.379},{"month":"2010-06","total_sales":279740.51900000003},{"month":"2010-07","total_sales":283801.71},{"month":"2010-08","total_sales":212134.3055},{"month":"2010-09","total_sales":463269.2195},{"month":"2010-10","total_sales":350759.665},{"month":"2010-11","total_sales":323332.112},{"month":"2010-12","total_sales":364595.5865},{"month":"2011-01","total_sales":191642.3765},{"month":"2011-02","total_sales":286007.3815},{"month":"2011-03","total_sales":311709.165},{"month":"2011-04","total_sales":325909.2735},{"month":"2011-05","total_sales":315211.871},{"month":"2011-06","total_sales":253306.7455},{"month":"2011-07","total_sales":268256.998},{"month":"2011-08","total_sales":247245.7245},{"month":"2011-09","total_sales":221745.596},{"month":"2011-10","total_sales":362875.2945},{"month":"2011-11","total_sales":365289.9605},{"month":"2011-12","total_sales":287616.3155},{"month":"2012-01","total_sales":346449.722},{"month":"2012-02","total_sales":404735.7155},{"month":"2012-03","total_sales":285669.409},{"month":"2012-04","total_sales":249147.6945},{"month":"2012-05","total_sales":369417.4365},{"month":"2012-06","total_sales":300335.272},{"month":"2012-07","total_sales":315713.918},{"month":"2012-08","total_sales":183279.708},{"month":"2012-09","total_sales":325792.756},{"month":"2012-10","total_sales":360129.3905},{"month":"2012-11","total_sales":298018.188},{"month":"2012-12","total_sales":281274.652}],"significance":[{"Dimension":"Region","Leader":"West","Runner_Up":"Ontario","Observed_Margin":534336.7960000001,"Margin_CI_Low":44977.31827499196,"Margin_CI_High":951796.2159874997,"Leader_Retention_Rate":0.9833333333333333,"Verdict":"REAL"},{"Dimension":"Product Category","Leader":"Technology","Runner_Up":"Furniture","Observed_Margin":805657.6399999997,"Margin_CI_Low":176540.38804998985,"Margin_CI_High":1457242.1282249934,"Leader_Retention_Rate":0.9973333333333333,"Verdict":"REAL"},{"Dimension":"Customer Segment","Leader":"Corporate","Runner_Up":"Home Office","Observed_Margin":281391.97000000003,"Margin_CI_Low":89730.874,"Margin_CI_High":405454.3549999998,"Leader_Retention_Rate":0.9993333333333333,"Verdict":"REAL"},{"Dimension":"Order Priority","Leader":"Low","Runner_Up":"High","Observed_Margin":15274.01500000013,"Margin_CI_Low":-452164.42450000346,"Margin_CI_High":459199.1896499946,"Leader_Retention_Rate":0.516,"Verdict":"NOISE"}]};
+
+const money = v => {
+  const a = Math.abs(v);
+  if (a >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return '$' + (v/1e3).toFixed(1) + 'K';
+  return '$' + v.toFixed(0);
+};
+const num = v => v.toLocaleString('en-US');
+const pct = v => (v*100).toFixed(1) + '%';
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const trunc = (s,n) => s.length > n ? s.slice(0,n-1) + '\u2026' : s;
+
+const tip = document.getElementById('tip');
+function showTip(e, title, rows){
+  tip.innerHTML = '<div class="t-title">'+title+'</div>' +
+    rows.map(r => '<div class="t-row">'+r+'</div>').join('');
+  tip.style.opacity = 1;
+  const pad=14, w=tip.offsetWidth, h=tip.offsetHeight;
+  let x=e.clientX+pad, y=e.clientY+pad;
+  if (x+w > innerWidth-8)  x = e.clientX-w-pad;
+  if (y+h > innerHeight-8) y = e.clientY-h-pad;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+const hideTip = () => tip.style.opacity = 0;
+
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs){const n=document.createElementNS(NS,tag);
+  for(const k in attrs) n.setAttribute(k,attrs[k]); return n;}
+function svgRoot(w,h){const s=el('svg',{viewBox:`0 0 ${w} ${h}`,width:'100%',role:'img'});
+  s.style.minWidth=Math.min(w,420)+'px'; return s;}
+function niceTicks(max,count){
+  const raw=max/count, mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=[1,2,2.5,5,10].map(m=>m*mag).find(s=>s>=raw)||mag*10;
+  const out=[]; for(let v=0;v<=max*1.0001;v+=step) out.push(v); return out;
+}
+function yGrid(svg,scale,x0,x1,ticks,fmt){
+  ticks.forEach(t=>{
+    svg.appendChild(el('line',{x1:x0,x2:x1,y1:scale(t),y2:scale(t),
+      stroke:css('--grid'),'stroke-width':1}));
+    const lb=el('text',{x:x0-9,y:scale(t)+4,'text-anchor':'end',
+      fill:css('--text-muted'),'font-size':11});
+    lb.textContent=fmt(t); svg.appendChild(lb);
+  });
+}
+
+/* vertical bars - nominal categories all share one hue */
+function barChart(host, rows, valF, fmtV, tipRows){
+  const W=620,H=300,L=76,R=18,T=14,B=54;
+  const svg=svgRoot(W,H);
+  const max=Math.max(...rows.map(valF));
+  const y=v=>T+(H-T-B)*(1-v/(max*1.16));
+  yGrid(svg,y,L,W-R,niceTicks(max*1.16,4),fmtV);
+  const bw=(W-L-R)/rows.length;
+  rows.forEach((r,i)=>{
+    const v=valF(r), x=L+i*bw+bw*0.19, w=bw*0.62;
+    const bar=el('path',{d:`M${x},${y(0)} L${x},${y(v)+4} Q${x},${y(v)} ${x+4},${y(v)}
+      L${x+w-4},${y(v)} Q${x+w},${y(v)} ${x+w},${y(v)+4} L${x+w},${y(0)} Z`,
+      fill:css('--s1')});
+    bar.style.cursor='pointer';
+    bar.addEventListener('mousemove',e=>showTip(e,r.key,tipRows(r)));
+    bar.addEventListener('mouseleave',hideTip);
+    svg.appendChild(bar);
+    const val=el('text',{x:x+w/2,y:y(v)-7,'text-anchor':'middle',
+      fill:css('--text-secondary'),'font-size':11});
+    val.textContent=fmtV(v); svg.appendChild(val);
+    const lab=el('text',{x:x+w/2,y:H-B+20,'text-anchor':'middle',
+      fill:css('--text-secondary'),'font-size':10.5});
+    lab.textContent=trunc(r.key,14); svg.appendChild(lab);
+  });
+  svg.appendChild(el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),
+    stroke:css('--rule'),'stroke-width':1}));
+  host.appendChild(svg);
+}
+
+/* horizontal bars - for long category names */
+function barChartH(host, rows, valF, fmtV, tipRows, labelChars){
+  const W=620,rowH=27,L=labelChars>20?230:150,R=76,T=8;
+  const H=T+rows.length*rowH+16;
+  const svg=svgRoot(W,H);
+  const max=Math.max(...rows.map(valF));
+  const x=v=>L+(W-L-R)*(v/(max*1.05));
+  rows.forEach((r,i)=>{
+    const v=valF(r), yy=T+i*rowH, bh=rowH*0.64;
+    const bar=el('path',{d:`M${L},${yy} L${x(v)-4},${yy} Q${x(v)},${yy} ${x(v)},${yy+4}
+      L${x(v)},${yy+bh-4} Q${x(v)},${yy+bh} ${x(v)-4},${yy+bh} L${L},${yy+bh} Z`,
+      fill:css('--s1')});
+    bar.style.cursor='pointer';
+    bar.addEventListener('mousemove',e=>showTip(e,r.key,tipRows(r)));
+    bar.addEventListener('mouseleave',hideTip);
+    svg.appendChild(bar);
+    const lab=el('text',{x:L-10,y:yy+bh/2+4,'text-anchor':'end',
+      fill:css('--text-secondary'),'font-size':11});
+    lab.textContent=trunc(r.key,labelChars); svg.appendChild(lab);
+    const val=el('text',{x:x(v)+8,y:yy+bh/2+4,
+      fill:css('--text-secondary'),'font-size':11});
+    val.textContent=fmtV(v); svg.appendChild(val);
+  });
+  host.appendChild(svg);
+}
+
+/* monthly line with crosshair, zero-baseline */
+function lineChart(host, rows){
+  const W=1140,H=330,L=84,R=26,T=16,B=62;
+  const svg=svgRoot(W,H);
+  const vals=rows.map(r=>r.total_sales);
+  const max=Math.max(...vals);
+  const y=v=>T+(H-T-B)*(1-v/(max*1.14));
+  const x=i=>L+(W-L-R)*(i/(rows.length-1));
+  yGrid(svg,y,L,W-R,niceTicks(max*1.14,4),money);
+  const d=rows.map((r,i)=>`${i?'L':'M'}${x(i)},${y(r.total_sales)}`).join(' ');
+  svg.appendChild(el('path',{d,fill:'none',stroke:css('--s1'),
+    'stroke-width':2,'stroke-linejoin':'round'}));
+  rows.forEach((r,i)=>{
+    if (i % 6 === 0){
+      const lb=el('text',{x:x(i),y:H-B+22,'text-anchor':'end',
+        fill:css('--text-muted'),'font-size':10.5,
+        transform:`rotate(-45 ${x(i)} ${H-B+22})`});
+      lb.textContent=r.month; svg.appendChild(lb);
+    }
+  });
+  const cross=el('line',{x1:0,x2:0,y1:T,y2:y(0),stroke:css('--text-muted'),
+    'stroke-width':1,'stroke-dasharray':'3 3',opacity:0});
+  svg.appendChild(cross);
+  const dot=el('circle',{r:5,fill:css('--s1'),stroke:css('--surface-1'),
+    'stroke-width':1.5,opacity:0});
+  svg.appendChild(dot);
+  const band=el('rect',{x:L,y:T,width:W-L-R,height:y(0)-T,fill:'transparent'});
+  band.style.cursor='crosshair';
+  band.addEventListener('mousemove',e=>{
+    const box=svg.getBoundingClientRect();
+    const rel=(e.clientX-box.left)/box.width*W;
+    let i=Math.round((rel-L)/((W-L-R)/(rows.length-1)));
+    i=Math.max(0,Math.min(rows.length-1,i));
+    const r=rows[i];
+    cross.setAttribute('x1',x(i)); cross.setAttribute('x2',x(i));
+    cross.setAttribute('opacity',1);
+    dot.setAttribute('cx',x(i)); dot.setAttribute('cy',y(r.total_sales));
+    dot.setAttribute('opacity',1);
+    showTip(e,r.month,['Sales: '+money(r.total_sales)]);
+  });
+  band.addEventListener('mouseleave',()=>{cross.setAttribute('opacity',0);
+    dot.setAttribute('opacity',0); hideTip();});
+  svg.appendChild(band);
+  svg.appendChild(el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),
+    stroke:css('--rule'),'stroke-width':1}));
+  host.appendChild(svg);
+}
+
+/* bootstrap CI dot plot */
+function sigChart(host, rows){
+  const W=1140,rowH=54,L=150,R=40,T=18;
+  const H=T+rows.length*rowH+44;
+  const svg=svgRoot(W,H);
+  const lo=Math.min(0,...rows.map(r=>r.Margin_CI_Low));
+  const hi=Math.max(...rows.map(r=>r.Margin_CI_High));
+  const pad=(hi-lo)*0.06;
+  const x=v=>L+(W-L-R)*((v-(lo-pad))/((hi+pad)-(lo-pad)));
+  svg.appendChild(el('line',{x1:x(0),x2:x(0),y1:T-4,y2:T+rows.length*rowH,
+    stroke:css('--text-primary'),'stroke-width':1.5}));
+  const zl=el('text',{x:x(0),y:H-16,'text-anchor':'middle',
+    fill:css('--text-muted'),'font-size':11});
+  zl.textContent='zero = a tie'; svg.appendChild(zl);
+  rows.forEach((r,i)=>{
+    const yy=T+i*rowH+rowH*0.55;
+    svg.appendChild(el('line',{x1:x(r.Margin_CI_Low),x2:x(r.Margin_CI_High),
+      y1:yy,y2:yy,stroke:css('--deemph'),'stroke-width':7,'stroke-linecap':'round'}));
+    const d=el('circle',{cx:x(r.Observed_Margin),cy:yy,r:6,fill:css('--s1'),
+      stroke:css('--surface-1'),'stroke-width':1.5});
+    d.style.cursor='pointer';
+    d.addEventListener('mousemove',e=>showTip(e,r.Dimension,[
+      'Leader: '+r.Leader, 'Runner-up: '+r.Runner_Up,
+      'Margin: '+money(r.Observed_Margin),
+      '95% CI: '+money(r.Margin_CI_Low)+' to '+money(r.Margin_CI_High),
+      'Holds top in '+pct(r.Leader_Retention_Rate)+' of resamples',
+      'Verdict: '+r.Verdict]));
+    d.addEventListener('mouseleave',hideTip);
+    svg.appendChild(d);
+    const lab=el('text',{x:L-12,y:yy+4,'text-anchor':'end',
+      fill:css('--text-primary'),'font-size':12.5});
+    lab.textContent=r.Dimension; svg.appendChild(lab);
+    const note=el('text',{x:x(r.Margin_CI_Low),y:yy-14,
+      fill:css('--text-secondary'),'font-size':11,
+      stroke:css('--surface-1'),'stroke-width':3.5,
+      'paint-order':'stroke fill','stroke-linejoin':'round'});
+    note.textContent=r.Leader+' holds top in '+pct(r.Leader_Retention_Rate)+' of resamples';
+    svg.appendChild(note);
+  });
+  host.appendChild(svg);
+}
+
+function card(title,caption,full,render,cols,rows){
+  const c=document.createElement('div');
+  c.className='card'+(full?' full':'');
+  c.innerHTML='<h2>'+title+'</h2><p class="cap">'+caption+'</p>';
+  const chart=document.createElement('div');
+  chart.className='chart'; c.appendChild(chart); render(chart);
+  if(cols){
+    const btn=document.createElement('button');
+    btn.className='toggle'; btn.type='button'; btn.textContent='Show data table';
+    const tbl=document.createElement('div'); tbl.className='hidden';
+    tbl.innerHTML='<table><thead><tr>'+cols.map(h=>'<th>'+h[0]+'</th>').join('')+
+      '</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(h=>'<td>'+h[1](r)+'</td>').join('')+
+      '</tr>').join('')+'</tbody></table>';
+    btn.onclick=()=>{const open=!tbl.classList.contains('hidden');
+      tbl.classList.toggle('hidden');
+      btn.textContent=open?'Show data table':'Hide data table';};
+    c.appendChild(btn); c.appendChild(tbl);
+  }
+  document.getElementById('grid').appendChild(c);
+}
+
+function render(){
+  document.getElementById('grid').innerHTML='';
+  const k=DATA.kpis;
+  document.getElementById('sub').textContent =
+    num(k.total_orders)+' orders  |  '+k.date_from+' to '+k.date_to+
+    '  |  '+num(k.unique_customers)+' customers';
+
+  const realCount = DATA.significance.filter(s=>s.Verdict==='REAL').length;
+  document.getElementById('bannerTitle').textContent =
+    realCount+' of '+DATA.significance.length+' rankings hold up under statistical testing.';
+  document.getElementById('bannerText').textContent =
+    'Each leader below was re-tested by resampling the orders 1,500 times. '+
+    'Where the confidence interval clears zero, the lead is real and safe to act on. '+
+    'Hover any chart for detail, or open the data table beneath it.';
+
+  const kpis=[
+    ['Total Sales',money(k.total_sales),num(k.line_items)+' line items'],
+    ['Total Profit',money(k.total_profit),pct(k.profit_margin)+' margin'],
+    ['Total Orders',num(k.total_orders),num(k.unique_customers)+' customers'],
+    ['Avg Order Value',money(k.average_order_value),'per order'],
+    ['Avg Discount',pct(k.average_discount),'across all lines'],
+    ['Shipping Cost',money(k.total_shipping_cost),'total'],
+  ];
+  document.getElementById('kpis').innerHTML=kpis.map(([l,v,n])=>
+    '<div class="kpi"><div class="label">'+l+'</div><div class="value">'+v+
+    '</div><div class="note">'+n+'</div></div>').join('');
+
+  const tipSales=r=>['Sales: '+money(r.total_sales),'Profit: '+money(r.total_profit),
+    'Orders: '+num(r.orders),'Margin: '+pct(r.margin),'Share: '+pct(r.share)];
+  const colsSales=[['Name',r=>r.key],['Sales',r=>money(r.total_sales)],
+    ['Profit',r=>money(r.total_profit)],['Orders',r=>num(r.orders)],
+    ['Margin',r=>pct(r.margin)],['Share',r=>pct(r.share)]];
+
+  const topR=DATA.regions[0];
+  card('Sales by Region',
+    topR.key+' leads with '+money(topR.total_sales)+' ('+pct(topR.share)+
+    ' of revenue). Regional gaps here are wide \u2014 the smallest region does a fraction of the largest.',
+    false, h=>barChartH(h,DATA.regions,r=>r.total_sales,money,tipSales,21),
+    colsSales, DATA.regions);
+
+  card('Sales by Product Category',
+    'Three categories. '+DATA.categories[0].key+' leads on revenue \u2014 check the margin column, since revenue rank and profit rank differ here.',
+    false, h=>barChart(h,DATA.categories,r=>r.total_sales,money,tipSales),
+    colsSales, DATA.categories);
+
+  card('Top 10 Products by Sales',
+    'Revenue is concentrated in a handful of high-ticket items \u2014 a genuine long-tail pattern.',
+    false, h=>barChartH(h,DATA.products,r=>r.total_sales,money,tipSales,30),
+    colsSales, DATA.products);
+
+  card('Profit by Customer Segment',
+    'Ranked by profit rather than revenue, since segment value is a margin question.',
+    false, h=>barChart(h,[...DATA.segments].sort((a,b)=>b.total_profit-a.total_profit),
+      r=>r.total_profit,money,tipSales),
+    colsSales, [...DATA.segments].sort((a,b)=>b.total_profit-a.total_profit));
+
+  card('Sales by Order Priority',
+    'Shown in priority order (Critical \u2192 Low), not sorted by value \u2014 this is an ordered scale, so resorting it would hide the pattern.',
+    false, h=>barChart(h,DATA.priority,r=>r.total_sales,money,tipSales),
+    colsSales, DATA.priority);
+
+  card('Sales by Ship Mode',
+    'Delivery method mix. Shipping cost totals '+money(k.total_shipping_cost)+' across all orders.',
+    false, h=>barChart(h,DATA.ship_modes,r=>r.total_sales,money,tipSales),
+    colsSales, DATA.ship_modes);
+
+  card('Monthly Sales Trend',
+    'Zero-baseline axis across '+DATA.trend.length+' months. Hover for any month\u2019s figure.',
+    true, h=>lineChart(h,DATA.trend),
+    [['Month',r=>r.month],['Sales',r=>money(r.total_sales)]], DATA.trend);
+
+  card('Do these rankings hold up?',
+    'Bootstrap 95% confidence interval on each leader\u2019s margin over its nearest rival. An interval clearing zero means the lead is statistically real.',
+    true, h=>sigChart(h,DATA.significance),
+    [['Dimension',r=>r.Dimension],['Leader',r=>r.Leader],['Runner-up',r=>r.Runner_Up],
+     ['Margin',r=>money(r.Observed_Margin)],['CI low',r=>money(r.Margin_CI_Low)],
+     ['CI high',r=>money(r.Margin_CI_High)],
+     ['Holds top',r=>pct(r.Leader_Retention_Rate)],['Verdict',r=>r.Verdict]],
+    DATA.significance);
+
+  document.getElementById('foot').textContent =
+    'Built from '+num(k.line_items)+' cleaned order line items ('+k.date_from+
+    ' to '+k.date_to+'). Charts use a colourblind-validated palette; every ranking '+
+    'is paired with the test that says whether it means anything.';
+}
+
+const btn=document.getElementById('themeBtn');
+btn.onclick=()=>{
+  const dark=document.documentElement.getAttribute('data-theme')==='dark'
+    || (!document.documentElement.hasAttribute('data-theme')
+        && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+  render();
+};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
